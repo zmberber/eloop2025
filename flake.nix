@@ -22,6 +22,7 @@
         function nixpkgs.legacyPackages.${system}
       )
     );
+    forAllSystems2 = nixpkgs.lib.genAttrs systems;
   in {
     packages = forAllSystems (pkgs: {
       default = pkgs.writeShellScriptBin "genPdf" ''
@@ -35,6 +36,23 @@
         default = {
           type = "app";
           program = "${self.packages.${system}.default}/bin/genPdf";
+        };
+      }
+    );
+    devShells = forAllSystems2 (
+      system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        default = pkgs.mkShell {
+          name = "eloop2025 shell";
+          buildInputs = with pkgs; [
+            texliveFull
+            pandoc
+          ];
+          shellHook = ''
+            echo "Welcome to the eloop 2025 shell!"
+          '';
         };
       }
     );
